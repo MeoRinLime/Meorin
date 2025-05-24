@@ -1,4 +1,4 @@
-import YukinaConfig from "../../yukina.config";
+import MeorinConfig from "../../meorin.config";
 import type I18nKeys from "./keys";
 import { en } from "./languages/en";
 import { zh_CN } from "./languages/zh_cn";

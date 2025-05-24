@@ -12,7 +12,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkMath from "remark-math";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
-import YukinaConfig from "./yukina.config";
+import MeorinConfig from "./meorin.config";
 
 import pagefind from "astro-pagefind";
 

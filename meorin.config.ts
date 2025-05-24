@@ -1,14 +1,14 @@
 import I18nKeys from "./src/locales/keys";
 import type { Configuration } from "./src/types/config";
 
-const YukinaConfig: Configuration = {
-  title: "Yukina",
-  subTitle: "Yukina Template Demo Site",
-  brandTitle: "Yukina",
+const MeorinConfig: Configuration = {
+  title: "Meorin",
+  subTitle: "Meorin Blog Site",
+  brandTitle: "Meorin",
 
   description: "Demo Site",
 
-  site: "https://yukina-blog.vercel.app",
+  site: "https://meorin.top",
 
   locale: "en", // set for website language and date format
 
@@ -75,4 +75,4 @@ const YukinaConfig: Configuration = {
   bannerStyle: "LOOP", // 'loop' | 'static' | 'hidden'
 };
 
-export default YukinaConfig;
+export default MeorinConfig;
