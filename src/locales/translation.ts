@@ -17,7 +17,7 @@ export function getTranslation(lang: string): Translation {
 }
 
 export function i18n(key: I18nKeys, ...interpolations: string[]): string {
-  const lang = YukinaConfig.locale;
+  const lang = MeorinConfig.locale;
   let translation = getTranslation(lang)[key];
   interpolations.forEach((interpolation) => {
     translation = translation.replace("{{}}", interpolation);
