@@ -10,7 +10,7 @@ const MeorinConfig: Configuration = {
 
   site: "https://meorin.top",
 
-  locale: "en", // set for website language and date format
+  locale: "zh-CN", // set for website language and date format
 
   navigators: [
     {

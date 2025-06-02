@@ -24,3 +24,15 @@ export function i18n(key: I18nKeys, ...interpolations: string[]): string {
   });
   return translation;
 }
+
+// 客户端动态翻译函数
+export function getClientI18n(locale?: string) {
+  return function(key: I18nKeys, ...interpolations: string[]): string {
+    const lang = locale || (typeof window !== 'undefined' ? localStorage.getItem('locale') : null) || MeorinConfig.locale;
+    let translation = getTranslation(lang)[key];
+    interpolations.forEach((interpolation) => {
+      translation = translation.replace("{{}}", interpolation);
+    });
+    return translation;
+  };
+}

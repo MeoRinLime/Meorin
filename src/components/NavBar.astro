@@ -5,6 +5,7 @@ import { i18n } from "../locales/translation";
 import { Icon } from "astro-icon/components";
 import SearchBar from "./SearchBar.svelte";
 import MobileSearchBar from "./MobileSearchBar.svelte";
+import LanguageSwitcher from "./LanguageSwitcher.svelte";
 import "astro-pagefind";
 
 const navCount = MeorinConfig.navigators.length;
@@ -47,7 +48,7 @@ const navCount = MeorinConfig.navigators.length;
       {
         MeorinConfig.navigators.map((nav) => (
           <a href={nav.href}>
-            <p>{i18n(nav.nameKey)}</p>
+            <p data-i18n={nav.nameKey}>{i18n(nav.nameKey)}</p>
           </a>
         ))
       }
@@ -59,6 +60,7 @@ const navCount = MeorinConfig.navigators.length;
       <div class="hidden lg:block">
         <SearchBar client:only="svelte" />
       </div>
+      <LanguageSwitcher client:only="svelte" />
       <div class="theme">
         <button type="button" id="theme-switcher">
           <Icon
@@ -88,7 +90,7 @@ const navCount = MeorinConfig.navigators.length;
             <a href={nav.href} class="mobile-nav-item">
               <div class="flex flex-row items-center space-x-2">
                 <span class="text-[var(--primary-color)]">·</span>
-                <span>{i18n(nav.nameKey)}</span>
+                <span data-i18n={nav.nameKey}>{i18n(nav.nameKey)}</span>
               </div>
               <Icon
                 name="cuida:caret-right-outline"

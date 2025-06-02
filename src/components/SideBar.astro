@@ -57,7 +57,7 @@ const tagKeys = [...tags.keys()];
               href="/categories/"
               class="pl-4 text-xl font-bold text-[var(--text-color)] transition-colors hover:text-[var(--primary-color)]"
             >
-              {i18n(I18nKeys.side_bar_categories)}
+              <span data-i18n={I18nKeys.side_bar_categories}>{i18n(I18nKeys.side_bar_categories)}</span>
             </a>
           </div>
           <div class="relative flex flex-col">
@@ -82,7 +82,7 @@ const tagKeys = [...tags.keys()];
                   href="/categories/"
                   class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
                 >
-                  <span>{i18n(I18nKeys.side_bar_view_more)}</span>
+                  <span data-i18n={I18nKeys.side_bar_view_more}>{i18n(I18nKeys.side_bar_view_more)}</span>
                   <Icon name="mingcute:arrow-right-line" />
                 </a>
               </div>
@@ -104,7 +104,7 @@ const tagKeys = [...tags.keys()];
               href="/tags/"
               class="pl-4 text-xl font-bold text-[var(--text-color)] transition-colors hover:text-[var(--primary-color)]"
             >
-              {i18n(I18nKeys.side_bar_tags)}
+              <span data-i18n={I18nKeys.side_bar_tags}>{i18n(I18nKeys.side_bar_tags)}</span>
             </a>
           </div>
           <div class="relative flex max-w-[224px] flex-row flex-wrap">
@@ -124,7 +124,7 @@ const tagKeys = [...tags.keys()];
                   href="/tags/"
                   class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
                 >
-                  <span>{i18n(I18nKeys.side_bar_view_more)}</span>
+                  <span data-i18n={I18nKeys.side_bar_view_more}>{i18n(I18nKeys.side_bar_view_more)}</span>
                   <Icon name="mingcute:arrow-right-line" />
                 </a>
               </div>

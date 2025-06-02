@@ -4,19 +4,31 @@
   import Icon from "@iconify/svelte";
 
   import I18nKeys from "../locales/keys";
-  import { i18n } from "../locales/translation";
+  import { getClientI18n } from "../locales/translation";
 
   let searchKeyword = "";
   let searchResult: any[] = [];
   let searchBarDisplay = false;
+  let searchPlaceholder = "搜索";
 
   let resultPannel: HTMLDivElement;
   let searchBar: HTMLDivElement;
   let searchButton: HTMLButtonElement;
 
   let search = (keyword: string) => {};
+  let i18n = getClientI18n();
 
   onMount(async () => {
+    // 初始化翻译
+    const savedLocale = localStorage.getItem('locale') || 'zh-CN';
+    i18n = getClientI18n(savedLocale);
+    searchPlaceholder = i18n(I18nKeys.nav_bar_search_placeholder);
+
+    // 监听语言切换事件
+    window.addEventListener('localeChanged', (e: any) => {
+      i18n = getClientI18n(e.detail.locale);
+      searchPlaceholder = i18n(I18nKeys.nav_bar_search_placeholder);
+    });
     // setup overlay scrollbars
     OverlayScrollbars(resultPannel, {
       scrollbars: {
@@ -112,7 +124,7 @@
       <input
         id="search-bar-input-mobile"
         class="text-[var(--text-color)] grow bg-transparent outline-none transition-all"
-        placeholder={i18n(I18nKeys.nav_bar_search_placeholder)}
+        placeholder={searchPlaceholder}
         type="text"
         autocomplete="off"
         on:focus={() => {
