@@ -54,11 +54,11 @@ const MeorinConfig: Configuration = {
   maxFooterTagChip: 24,
 
   banners: [
-    "https://images.meorin.top/banner/aichan1.png",
-    "https://images.meorin.top/banner/aichan2.png",
+    "https://images.meorin.top/banner/aichan1.jpg",
+    "https://images.meorin.top/banner/aichan2.jpg",
     "https://images.meorin.top/banner/aichan3.jpg",
-    "https://images.meorin.top/banner/alice.png",
-    "https://images.meorin.top/banner/aichan3.png",
+    "https://images.meorin.top/banner/alice.jpg",
+    "https://images.meorin.top/banner/aichan3.jpg",
     "https://images.meorin.top/banner/kaf.jpg",
   ],
 

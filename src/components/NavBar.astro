@@ -3,9 +3,9 @@ import MeorinConfig from "../../meorin.config";
 import { i18n } from "../locales/translation";
 
 import { Icon } from "astro-icon/components";
-import SearchBar from "./SearchBar.svelte";
-import MobileSearchBar from "./MobileSearchBar.svelte";
-import LanguageSwitcher from "./LanguageSwitcher.svelte";
+import SearchBar from "./SearchBar.astro";
+import MobileSearchBar from "./MobileSearchBar.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
 import "astro-pagefind";
 
 const navCount = MeorinConfig.navigators.length;
@@ -34,7 +34,10 @@ const navCount = MeorinConfig.navigators.length;
           class="mx-auto hidden"
         />
       </button>
-      <a class="title" href="/">
+      <div class="lg:hidden">
+        <LanguageSwitcher />
+      </div>
+      <a class="title flex-1" href="/">
         {MeorinConfig.brandTitle}
       </a>
     </div>
@@ -55,12 +58,14 @@ const navCount = MeorinConfig.navigators.length;
     </div>
     <div class="toolbar">
       <div class="lg:hidden">
-        <MobileSearchBar client:only="svelte" />
+        <MobileSearchBar />
       </div>
       <div class="hidden lg:block">
-        <SearchBar client:only="svelte" />
+        <SearchBar />
       </div>
-      <LanguageSwitcher client:only="svelte" />
+      <div class="hidden lg:block">
+        <LanguageSwitcher />
+      </div>
       <div class="theme">
         <button type="button" id="theme-switcher">
           <Icon
@@ -115,12 +120,12 @@ const navCount = MeorinConfig.navigators.length;
   }
 
   .brand {
-    @apply flex w-full flex-row items-center justify-between;
+    @apply flex w-full flex-row items-center;
     @apply lg:hidden;
   }
 
   .brand > .title {
-    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 truncate rounded-lg px-4 py-2 text-2xl font-medium text-[var(--primary-color)] transition-all;
+    @apply flex items-center justify-center truncate rounded-lg px-4 py-2 text-2xl font-medium text-[var(--primary-color)] transition-all;
     @apply hover:bg-[var(--primary-color-hover)];
     font-family: var(--brand-font);
   }
@@ -167,7 +172,7 @@ const navCount = MeorinConfig.navigators.length;
   }
 
   .toolbar {
-    @apply flex flex-row items-center justify-end space-x-1 lg:mr-2;
+    @apply flex flex-row items-center justify-end space-x-1 lg:space-x-4 lg:mr-2;
   }
 
   .toolbar button {
@@ -185,7 +190,7 @@ const navCount = MeorinConfig.navigators.length;
 
   .mobile-menu-nav-opened {
     @apply opacity-100;
-    height: calc(var(--navCount) * 52px);
+    height: calc(var(--navCount + 1) * 52px);
   }
 
   .mobile-menu-nav li a {
@@ -316,19 +321,61 @@ const navCount = MeorinConfig.navigators.length;
     menuIconClosed.style.display = "block";
   });
 
-  // fold nav bar when scroll down
   const navBarElement = document.getElementById("nav");
-  const bannerElement = document.getElementById("banner");
-  const bannerHeight = bannerElement!.offsetHeight - 50;
-  let lastYPos = 0;
-  window.addEventListener("scroll", () => {
-    if (bannerHeight < window.scrollY && window.scrollY > lastYPos) {
-      navBarElement!.style.top = "-72px";
-    } else {
+
+  // 检测是否为移动设备
+  const isMobile = () => window.innerWidth < 1024;
+
+  if (!isMobile()) {
+    // 桌面模式：默认导航栏折叠，鼠标悬浮时展开
+    navBarElement!.addEventListener("mouseenter", () => {
       navBarElement!.style.top = "0";
-    }
-    lastYPos = window.scrollY;
-  });
+    });
+    navBarElement!.addEventListener("mouseleave", () => {
+      navBarElement!.style.top = "-72px";
+    });
+
+    setTimeout(() => {
+      navBarElement!.style.top = "-72px";
+    }, 3000);
+  } else {
+    // 移动模式：滚动隐藏导航栏
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateNavBar = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // 向下滚动且超过100px时隐藏
+        navBarElement!.style.top = "-72px";
+      } else {
+        // 向上滚动或在顶部时显示
+        navBarElement!.style.top = "0";
+      }
+      
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateNavBar);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll);
+    
+    // 监听窗口大小变化，如果从移动端切换到桌面端需要重新初始化
+    window.addEventListener("resize", () => {
+      if (!isMobile()) {
+        window.removeEventListener("scroll", onScroll);
+        location.reload();
+      }
+    });
+  }
+
 </script>
 
 <script is:inline>

@@ -1,0 +1,216 @@
+---
+import { i18n } from "../locales/translation";
+
+const supportedLocales = [
+  { code: 'zh-CN', name: '中文'},
+  { code: 'en', name: 'English'}
+];
+---
+
+<div class="language-switcher">
+  <div class="relative">
+    <button
+      type="button"
+      class="language-switcher-button flex items-center space-x-1 rounded-lg px-2 py-1 text-[var(--text-color)] transition-all hover:bg-[var(--primary-color-hover)] hover:text-[var(--primary-color)]"
+    >
+      <span class="current-language-name">中文</span>
+    </button>
+    
+    <div class="language-dropdown absolute top-full mt-1 hidden w-32 rounded-lg bg-[var(--card-color)] shadow-lg border border-[var(--border-color)] z-50">
+      {supportedLocales.map(locale => (
+        <button
+          type="button"
+          class="flex w-full items-center space-x-2 px-3 py-2 text-left text-[var(--text-color)] transition-all hover:bg-[var(--primary-color-lighten)] first:rounded-t-lg last:rounded-b-lg language-option"
+          data-locale={locale.code}
+          data-name={locale.name}
+        >
+          <span>{locale.name}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* 默认情况下，下拉菜单左对齐（移动端） */
+  .language-dropdown {
+    left: 0;
+  }
+  
+  /* 在桌面端工具栏中，下拉菜单右对齐 */
+  .toolbar .language-dropdown {
+    left: auto;
+    right: 0;
+  }
+</style>
+
+<script>
+  import { getClientI18n } from "../locales/translation";
+  import type I18nKeys from "../locales/keys";
+
+  let currentLocale = 'zh-CN';
+  let i18n = getClientI18n();
+
+  const supportedLocales = [
+    { code: 'zh-CN', name: '中文'},
+    { code: 'en', name: 'English'}
+  ];
+
+  function updatePageTexts() {
+    // 更新所有带有 data-i18n 属性的元素
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (key) {
+        const translatedText = i18n(key as any);
+        if (element.tagName === 'INPUT' && element.getAttribute('type') === 'text') {
+          (element as HTMLInputElement).placeholder = translatedText;
+        } else {
+          element.textContent = translatedText;
+        }
+      }
+    });
+
+    // 更新带有 data-i18n-placeholder 属性的元素
+    const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+    placeholderElements.forEach(element => {
+      const key = element.getAttribute('data-i18n-placeholder');
+      if (key && element instanceof HTMLInputElement) {
+        element.placeholder = i18n(key as any);
+      }
+    });
+
+    // 更新页面标题
+    const titleElement = document.querySelector('title');
+    if (titleElement) {
+      // 这里可以根据需要更新页面标题
+    }
+  }
+
+  function switchLanguage(locale: string) {
+    currentLocale = locale;
+    localStorage.setItem('locale', locale);
+    i18n = getClientI18n(locale);
+    
+    // 更新所有语言切换器的显示名称
+    const allLanguageNames = document.querySelectorAll('.current-language-name');
+    const selectedLocale = supportedLocales.find(l => l.code === locale);
+    if (selectedLocale) {
+      allLanguageNames.forEach(nameElement => {
+        nameElement.textContent = selectedLocale.name;
+      });
+    }
+
+    // 更新所有语言选项的激活状态
+    const allLanguageOptions = document.querySelectorAll('.language-option');
+    allLanguageOptions.forEach(option => {
+      const optionLocale = option.getAttribute('data-locale');
+      if (optionLocale === locale) {
+        option.classList.add('bg-[var(--primary-color-lighten)]');
+      } else {
+        option.classList.remove('bg-[var(--primary-color-lighten)]');
+      }
+    });
+    
+    // 更新页面中的文本
+    updatePageTexts();
+    
+    // 触发自定义事件，通知其他组件语言已切换
+    window.dispatchEvent(new CustomEvent('localeChanged', { 
+      detail: { locale } 
+    }));
+  }
+
+  function initializeLanguageSwitcher() {
+    // 初始化当前语言
+    const savedLocale = localStorage.getItem('locale') || 'zh-CN';
+    currentLocale = savedLocale;
+    i18n = getClientI18n(savedLocale);
+
+    // 设置初始显示的语言名称
+    const selectedLocale = supportedLocales.find(l => l.code === savedLocale);
+    if (selectedLocale) {
+      const allLanguageNames = document.querySelectorAll('.current-language-name');
+      allLanguageNames.forEach(nameElement => {
+        nameElement.textContent = selectedLocale.name;
+      });
+    }
+
+    // 设置初始的激活状态
+    const allLanguageOptions = document.querySelectorAll('.language-option');
+    allLanguageOptions.forEach(option => {
+      const optionLocale = option.getAttribute('data-locale');
+      if (optionLocale === savedLocale) {
+        option.classList.add('bg-[var(--primary-color-lighten)]');
+      }
+    });
+
+    // 绑定按钮点击事件
+    const allSwitcherButtons = document.querySelectorAll('.language-switcher-button');
+    allSwitcherButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const dropdown = button.parentElement?.querySelector('.language-dropdown');
+        dropdown?.classList.toggle('hidden');
+        
+        // 关闭其他的下拉菜单
+        const allDropdowns = document.querySelectorAll('.language-dropdown');
+        allDropdowns.forEach(otherDropdown => {
+          if (otherDropdown !== dropdown) {
+            otherDropdown.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // 绑定语言选项点击事件
+    allLanguageOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const locale = option.getAttribute('data-locale');
+        if (locale) {
+          switchLanguage(locale);
+          // 关闭所有下拉菜单
+          const allDropdowns = document.querySelectorAll('.language-dropdown');
+          allDropdowns.forEach(dropdown => {
+            dropdown.classList.add('hidden');
+          });
+        }
+      });
+    });
+
+    // 监听语言切换事件
+    window.addEventListener('localeChanged', () => {
+      updatePageTexts();
+    });
+
+    // 初始化时更新一次页面文本
+    setTimeout(updatePageTexts, 100);
+  }
+
+  // 点击外部关闭下拉菜单
+  window.addEventListener('click', (e) => {
+    const target = e.target as Node;
+    let isInsideLanguageSwitcher = false;
+    
+    // 检查点击是否在任何语言切换器内
+    const allLanguageSwitchers = document.querySelectorAll('.language-switcher');
+    allLanguageSwitchers.forEach(switcher => {
+      if (switcher.contains(target)) {
+        isInsideLanguageSwitcher = true;
+      }
+    });
+    
+    if (!isInsideLanguageSwitcher) {
+      const allDropdowns = document.querySelectorAll('.language-dropdown');
+      allDropdowns.forEach(dropdown => {
+        dropdown.classList.add('hidden');
+      });
+    }
+  });
+
+  // 页面加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeLanguageSwitcher);
+  } else {
+    initializeLanguageSwitcher();
+  }
+</script>

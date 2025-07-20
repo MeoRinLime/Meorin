@@ -1,0 +1,244 @@
+---
+import { Icon } from "astro-icon/components";
+import { i18n } from "../locales/translation";
+import I18nKeys from "../locales/keys";
+
+const searchPlaceholder = i18n(I18nKeys.nav_bar_search_placeholder);
+---
+
+<div class="lg:hidden">
+  <button
+    type="button"
+    id="mobile-search-button"
+    class="flex w-11 justify-center rounded-lg py-2 text-[var(--text-color)] transition-all hover:bg-[var(--primary-color-hover)] hover:text-[var(--primary-color)]"
+  >
+    <Icon name="mingcute:search-line" size={24} />
+  </button>
+</div>
+
+<!-- mobile search bar -->
+<div class="fixed w-full z-20 top-[4.5rem] left-1/2 -translate-x-1/2">
+  <!-- search input pannel -->
+  <div
+    id="mobile-search-bar"
+    class="absolute left-1/2 -translate-x-1/2 w-[95%] px-1 flex flex-col h-0 opacity-0 lg:hidden bg-[var(--card-color)] rounded-xl transition-all overflow-hidden before:content-[''] after:content-[''] before:pt-1 after:pb-1"
+  >
+    <div class="bg-black/5 dark:bg-white/5 h-10 rounded-lg flex flex-row">
+      <label
+        for="search-bar-input-mobile"
+        class="w-10 h-10 flex flex-row justify-center items-center pl-2 pr-1 hover:cursor-text text-gray-400"
+      >
+        <Icon name="mingcute:search-line" size={24} />
+      </label>
+      <input
+        id="search-bar-input-mobile"
+        class="text-[var(--text-color)] grow bg-transparent outline-none transition-all"
+        placeholder={searchPlaceholder}
+        type="text"
+        autocomplete="off"
+        data-i18n-placeholder={I18nKeys.nav_bar_search_placeholder}
+      />
+    </div>
+  </div>
+
+  <!-- result pannel -->
+  <div
+    id="mobile-result-pannel"
+    class="max-h-[436px] overflow-y-scroll opacity-0 !absolute left-1/2 -translate-x-1/2 h-0 w-[95%] bg-[var(--card-color)] rounded-2xl top-[3.5rem] transition-all"
+  >
+    <div
+      class="flex flex-col h-full onload-animation before:content-[''] before:pt-2 after:content-[''] after:pb-2"
+      id="mobile-search-results-container"
+    >
+      <!-- Search results will be dynamically populated here -->
+    </div>
+  </div>
+</div>
+
+<script>
+  import { OverlayScrollbars } from "overlayscrollbars";
+  import { getClientI18n } from "../locales/translation";
+  import type I18nKeys from "../locales/keys";
+
+  let searchKeyword = "";
+  let searchResult: any[] = [];
+  let searchBarDisplay = false;
+  let searchPlaceholder = "搜索";
+
+  const resultPannel = document.getElementById("mobile-result-pannel") as HTMLDivElement;
+  const searchBar = document.getElementById("mobile-search-bar") as HTMLDivElement;
+  const searchButton = document.getElementById("mobile-search-button") as HTMLButtonElement;
+  const searchInput = document.getElementById("search-bar-input-mobile") as HTMLInputElement;
+  const resultsContainer = document.getElementById("mobile-search-results-container") as HTMLDivElement;
+
+  let search = (keyword: string) => {};
+  let i18n = getClientI18n();
+
+  // 初始化函数
+  async function initializeMobileSearch() {
+    // 初始化翻译
+    const savedLocale = localStorage.getItem('locale') || 'zh-CN';
+    i18n = getClientI18n(savedLocale);
+    updateSearchPlaceholder();
+
+    // 监听语言切换事件
+    window.addEventListener('localeChanged', (e: any) => {
+      i18n = getClientI18n(e.detail.locale);
+      updateSearchPlaceholder();
+    });
+
+    // setup overlay scrollbars
+    if (resultPannel) {
+      OverlayScrollbars(resultPannel, {
+        scrollbars: {
+          theme: "scrollbar-base scrollbar-auto py-1",
+          autoHide: "move",
+        },
+      });
+    }
+
+    /**
+     * Asynchronously performs a search based on the provided keyword.
+     * If in development mode, extracts a subset of mock results for demonstration.
+     * Otherwise, fetches results from the Pagefind search engine and populates the array.
+     * Toggles the visibility and height of the results panel based on the outcome.
+     */
+    search = async (keyword: string) => {
+      let searchResultArr: any[] = [];
+
+      if (keyword.trim() === "") {
+        searchResult = [];
+        updateResultsDisplay();
+        return;
+      }
+
+      try {
+        // @ts-ignore
+        const ret = await pagefind.search(keyword);
+        for (const item of ret.results) {
+          searchResultArr.push(await item.data());
+        }
+        searchResult = searchResultArr;
+        updateResultsDisplay();
+      } catch (error) {
+        console.warn("Search failed:", error);
+        searchResult = [];
+        updateResultsDisplay();
+      }
+    };
+
+    // 绑定搜索输入事件
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchKeyword = (e.target as HTMLInputElement).value;
+        search(searchKeyword);
+      });
+
+      searchInput.addEventListener('focus', () => {
+        search(searchKeyword);
+      });
+    }
+
+    // 绑定搜索按钮事件
+    if (searchButton) {
+      searchButton.addEventListener('click', toggleSearchBar);
+    }
+  }
+
+  function updateSearchPlaceholder() {
+    if (searchInput) {
+      const key = searchInput.getAttribute('data-i18n-placeholder');
+      if (key) {
+        searchInput.placeholder = i18n(key as any);
+      }
+    }
+  }
+
+  function updateResultsDisplay() {
+    if (!resultsContainer || !resultPannel) return;
+
+    const searchResultVisible = searchKeyword !== "" && searchResult.length !== 0;
+
+    if (searchResultVisible) {
+      // 清空现有结果
+      resultsContainer.innerHTML = '';
+      
+      // 添加新结果
+      searchResult.forEach(item => {
+        const resultElement = document.createElement('a');
+        resultElement.href = item.url;
+        resultElement.className = 'mx-2 py-2 px-3 rounded-xl result-item transition-all';
+        
+        resultElement.innerHTML = `
+          <div class="flex flex-row space-x-1 items-center">
+            <p class="line-clamp-1 text-lg font-semibold text-[var(--text-color)] result-title">
+              ${item.meta.title}
+            </p>
+            <span class="text-[var(--primary-color)] font-extrabold">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6l-6 6l-1.41-1.41z"/>
+              </svg>
+            </span>
+          </div>
+          <div>
+            <div class="h-10">
+              <p class="item-excerpt text-sm line-clamp-2 text-[var(--text-color-lighten)]">
+                ${item.excerpt}
+              </p>
+            </div>
+          </div>
+        `;
+        
+        resultsContainer.appendChild(resultElement);
+      });
+
+      resultPannel.style.height = `${searchResult.length * 84 + 16}px`;
+      resultPannel.style.opacity = "100%";
+    } else {
+      resultPannel.style.height = "0px";
+      resultPannel.style.opacity = "0";
+    }
+  }
+
+  const toggleSearchBar = () => {
+    searchBarDisplay = !searchBarDisplay;
+    if (searchBarDisplay) {
+      searchBar.style.height = "48px";
+      searchBar.style.opacity = "100%";
+    } else {
+      searchBar.style.height = "0px";
+      searchBar.style.opacity = "0";
+      searchKeyword = "";
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      search("");
+    }
+  };
+
+  // handle click outside to close search panel
+  document.addEventListener("click", (event) => {
+    if (
+      resultPannel && searchBar && searchButton &&
+      !resultPannel.contains(event.target as any) &&
+      !searchBar.contains(event.target as any) &&
+      !searchButton.contains(event.target as any)
+    ) {
+      searchBar.style.height = "0px";
+      searchBar.style.opacity = "0";
+      searchBarDisplay = false;
+      searchKeyword = "";
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      search("");
+    }
+  });
+
+  // 页面加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMobileSearch);
+  } else {
+    initializeMobileSearch();
+  }
+</script>
