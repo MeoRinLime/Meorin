@@ -60,7 +60,7 @@ const navCount = MeorinConfig.navigators.length;
       <div class="lg:hidden">
         <MobileSearchBar />
       </div>
-      <div class="hidden lg:block max-w-32">
+      <div class="hidden lg:block">
         <SearchBar />
       </div>
       <div class="hidden lg:block">
@@ -156,7 +156,7 @@ const navCount = MeorinConfig.navigators.length;
   }
 
   .menu {
-    @apply absolute left-1/2 hidden -translate-x-1/2 items-center justify-between space-x-1 text-lg text-[var(--text-color)] opacity-85;
+    @apply hidden items-center justify-between space-x-1 text-lg text-[var(--text-color)] opacity-85 -mr-4;
     @apply lg:flex;
   }
 
