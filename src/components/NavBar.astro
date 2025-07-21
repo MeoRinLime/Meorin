@@ -322,60 +322,18 @@ const navCount = MeorinConfig.navigators.length;
   });
 
   const navBarElement = document.getElementById("nav");
-
-  // 检测是否为移动设备
-  const isMobile = () => window.innerWidth < 1024;
-
-  if (!isMobile()) {
-    // 桌面模式：默认导航栏折叠，鼠标悬浮时展开
-    navBarElement!.addEventListener("mouseenter", () => {
+  const bannerElement = document.getElementById("banner");
+  const bannerHeight = bannerElement!.offsetHeight - 50;
+  let lastYPos = 0;
+  window.addEventListener("scroll", () => {
+    if (bannerHeight < window.scrollY && window.scrollY > lastYPos) {
+      navBarElement!.style.top = "-72px";
+    } else {
       navBarElement!.style.top = "0";
-    });
-    navBarElement!.addEventListener("mouseleave", () => {
-      navBarElement!.style.top = "-72px";
-    });
-
-    setTimeout(() => {
-      navBarElement!.style.top = "-72px";
-    }, 3000);
-  } else {
-    // 移动模式：滚动隐藏导航栏
-    let lastScrollY = window.scrollY;
-    let ticking = false;
-
-    const updateNavBar = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // 向下滚动且超过100px时隐藏
-        navBarElement!.style.top = "-72px";
-      } else {
-        // 向上滚动或在顶部时显示
-        navBarElement!.style.top = "0";
-      }
-      
-      lastScrollY = currentScrollY;
-      ticking = false;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(updateNavBar);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", onScroll);
-    
-    // 监听窗口大小变化，如果从移动端切换到桌面端需要重新初始化
-    window.addEventListener("resize", () => {
-      if (!isMobile()) {
-        window.removeEventListener("scroll", onScroll);
-        location.reload();
-      }
-    });
-  }
-
+    }
+    lastYPos = window.scrollY;
+  });
+  
 </script>
 
 <script is:inline>
