@@ -3,10 +3,10 @@ import type { Configuration } from "./src/types/config";
 
 const MeorinConfig: Configuration = {
   title: "Meorin",
-  subTitle: "Meorin Blog Site",
+  subTitle: "Meorin's Blog Site",
   brandTitle: "Meorin",
 
-  description: "Demo Site",
+  description: "Meorin's Blog Site.",
 
   site: "https://meorin.top",
 
