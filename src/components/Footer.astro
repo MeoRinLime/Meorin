@@ -69,7 +69,7 @@ const tagKeys = [...tags.keys()];
   <div class="rounded-3xl bg-[var(--card-color)] p-4 transition-all lg:hidden">
     <div class="mb-2 flex flex-row items-center space-x-2 pl-1.5">
       <span class="h-6 w-1 rounded-full bg-[var(--primary-color)]"></span>
-      <span class="text-xl font-semibold text-[var(--text-color)]">
+      <span data-i18n={I18nKeys.side_bar_categories} class="text-xl font-semibold text-[var(--text-color)]">
         {i18n(I18nKeys.side_bar_categories)}
       </span>
     </div>
@@ -117,8 +117,8 @@ const tagKeys = [...tags.keys()];
               href="/categories/"
               class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
             >
-            <span>{i18n(I18nKeys.side_bar_view_more)}</span>
-                <Icon name="mingcute:arrow-right-line" />
+              <span data-i18n={I18nKeys.side_bar_view_more}>{i18n(I18nKeys.side_bar_view_more)}</span>
+              <Icon name="mingcute:arrow-right-line" />
             </a>
           </div>
         )
@@ -130,7 +130,7 @@ const tagKeys = [...tags.keys()];
   <div class="rounded-3xl bg-[var(--card-color)] p-4 transition-all lg:hidden">
     <div class="mb-2 flex flex-row items-center space-x-2 pl-1.5">
       <span class="h-6 w-1 rounded-full bg-[var(--primary-color)]"></span>
-      <span class="text-xl font-semibold text-[var(--text-color)]">
+      <span data-i18n={I18nKeys.side_bar_tags} class="text-xl font-semibold text-[var(--text-color)]">
         {i18n(I18nKeys.side_bar_tags)}
       </span>
     </div>
@@ -154,7 +154,7 @@ const tagKeys = [...tags.keys()];
               href="/tags/"
               class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
             >
-              <span>{i18n(I18nKeys.side_bar_view_more)}</span>
+              <span data-i18n={I18nKeys.side_bar_view_more}>{i18n(I18nKeys.side_bar_view_more)}</span>
               <Icon name="mingcute:arrow-right-line" />
             </a>
           </div>
