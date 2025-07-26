@@ -1,4 +1,4 @@
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { IdToSlug } from "./hash";
 
 /**
@@ -42,7 +42,19 @@ export async function GetSortedPosts() {
   const allBlogPosts = await getCollection("posts", ({ data }) => {
     return import.meta.env.PROD ? data.draft !== true : true;
   });
-  const sorted = allBlogPosts.sort((a, b) => {
+  
+  // Render all posts to ensure they have the rendered property
+  const renderedPosts = await Promise.all(
+    allBlogPosts.map(async (post) => {
+      const rendered = await render(post);
+      return {
+        ...post,
+        rendered: rendered
+      };
+    })
+  );
+  
+  const sorted = renderedPosts.sort((a, b) => {
     const dateA = new Date(a.data.published);
     const dateB = new Date(b.data.published);
     return dateA > dateB ? -1 : 1;
