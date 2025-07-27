@@ -55,9 +55,13 @@ const { title, published, license, author, sourceLink } = Astro.props;
         </p>
       </div>
       <div class="flex flex-col">
-        <span class="select-none text-sm text-[var(--text-color-lighten)]" data-i18n={I18nKeys.copy_right_license}
-          >{i18n(I18nKeys.copy_right_license)}</span
-        >
+        {
+          license && (
+            <span class="select-none text-sm text-[var(--text-color-lighten)]" data-i18n={I18nKeys.copy_right_license}
+              >{i18n(I18nKeys.copy_right_license)}
+            </span>
+          )
+        }
         <!-- with special license -->
         {
           license && license.url && (
@@ -75,18 +79,6 @@ const { title, published, license, author, sourceLink } = Astro.props;
             <p class="!my-0 line-clamp-1 text-sm text-[var(--text-color)] lg:text-base">
               {license.name}
             </p>
-          )
-        }
-        <!-- without special license -->
-        {
-          !license && (
-            <a
-              class="line-clamp-1 text-sm text-[var(--text-color)] lg:text-base"
-              href={MeorinConfig.license.url}
-              target="_blank"
-            >
-              {MeorinConfig.license.name}
-            </a>
           )
         }
       </div>
