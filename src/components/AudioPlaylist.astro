@@ -1,0 +1,291 @@
+---
+export interface AudioTrack {
+  id: string;
+  src: string;
+  title: string;
+  artist?: string;
+  poster?: string;
+  duration?: string;
+}
+
+export interface Props {
+  tracks: AudioTrack[];
+  autoplay?: boolean;
+  className?: string;
+  showPlaylist?: boolean;
+}
+
+const { 
+  tracks, 
+  autoplay = false, 
+  className = "",
+  showPlaylist = true
+} = Astro.props;
+
+const firstTrack = tracks[0];
+---
+
+<div class={`audio-playlist-player ${className}`}>
+  <div class="player-container bg-[var(--card-color)] rounded-2xl shadow-lg overflow-hidden max-w-lg w-full mx-auto">
+    
+    <!-- 主播放器区域 -->
+    <div class="main-player p-6">
+      <div class="current-track-info mb-4">
+        <div class="track-cover-container relative mb-4">
+          <img 
+            id="current-cover"
+            src={firstTrack?.poster || '/default-audio-cover.svg'} 
+            alt="Current track cover"
+            class="w-full h-48 object-cover rounded-lg"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-lg"></div>
+        </div>
+        
+        <div class="track-meta text-center">
+          <h3 id="current-title" class="text-xl font-bold text-[var(--text-color)] mb-1">
+            {firstTrack?.title || "选择一首歌曲"}
+          </h3>
+          <p id="current-artist" class="text-sm text-[var(--text-color-secondary)]">
+            {firstTrack?.artist || ""}
+          </p>
+        </div>
+      </div>
+      
+      <!-- 播放控件 -->
+      <div class="player-controls">
+        <div class="progress-container mb-4">
+          <div class="progress-bar bg-gray-300 h-2 rounded-full overflow-hidden cursor-pointer">
+            <div class="progress-fill bg-[var(--primary-color)] h-full w-0 transition-all duration-100"></div>
+          </div>
+          <div class="time-display flex justify-between text-xs text-[var(--text-color-secondary)] mt-2">
+            <span class="current-time">0:00</span>
+            <span class="duration">0:00</span>
+          </div>
+        </div>
+        
+        <div class="control-buttons flex justify-center items-center space-x-6">
+          <button class="prev-btn text-[var(--text-color-secondary)] hover:text-[var(--primary-color)] transition-colors">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" />
+            </svg>
+          </button>
+          
+          <button class="play-pause-btn bg-[var(--primary-color)] text-white rounded-full w-14 h-14 flex items-center justify-center hover:bg-[var(--primary-color-dark)] transition-colors">
+            <svg class="play-icon w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8.044v3.912a1 1 0 001.555.832l3.09-1.956a1 1 0 000-1.664L9.555 7.168z" clip-rule="evenodd" />
+            </svg>
+            <svg class="pause-icon w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          
+          <button class="next-btn text-[var(--text-color-secondary)] hover:text-[var(--primary-color)] transition-colors">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798L4.555 5.168z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 播放列表 -->
+    {showPlaylist && tracks.length > 1 && (
+      <div class="playlist border-t border-[var(--border-color)]">
+        <div class="playlist-header p-4 bg-[var(--bg-color-secondary)]">
+          <h4 class="text-sm font-medium text-[var(--text-color)] flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+            </svg>
+            播放列表 ({tracks.length})
+          </h4>
+        </div>
+        <div class="playlist-tracks max-h-60 overflow-y-auto">
+          {tracks.map((track, index) => (
+            <div 
+              class="track-item flex items-center p-3 hover:bg-[var(--bg-color-secondary)] cursor-pointer transition-colors border-b border-[var(--border-color)] last:border-b-0"
+              data-track-index={index}
+              data-src={track.src}
+              data-title={track.title}
+              data-artist={track.artist || ""}
+              data-poster={track.poster || ""}
+            >
+              <div class="track-number w-8 text-sm text-[var(--text-color-secondary)]">
+                {index + 1}
+              </div>
+              
+              {track.poster && (
+                <img 
+                  src={track.poster} 
+                  alt={track.title}
+                  class="w-10 h-10 rounded object-cover mr-3"
+                />
+              )}
+              
+              <div class="track-info flex-1 min-w-0">
+                <div class="track-title text-sm font-medium text-[var(--text-color)] truncate">
+                  {track.title}
+                </div>
+                {track.artist && (
+                  <div class="track-artist text-xs text-[var(--text-color-secondary)] truncate">
+                    {track.artist}
+                  </div>
+                )}
+              </div>
+              
+              {track.duration && (
+                <div class="track-duration text-xs text-[var(--text-color-secondary)]">
+                  {track.duration}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <!-- 隐藏的音频元素 -->
+  <audio id="playlist-audio" preload="metadata">
+    {firstTrack && <source src={firstTrack.src} />}
+  </audio>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const audio = document.getElementById('playlist-audio') as HTMLAudioElement;
+    const playPauseBtn = document.querySelector('.play-pause-btn') as HTMLButtonElement;
+    const prevBtn = document.querySelector('.prev-btn') as HTMLButtonElement;
+    const nextBtn = document.querySelector('.next-btn') as HTMLButtonElement;
+    const playIcon = document.querySelector('.play-icon') as HTMLElement;
+    const pauseIcon = document.querySelector('.pause-icon') as HTMLElement;
+    const progressFill = document.querySelector('.progress-fill') as HTMLElement;
+    const progressBar = document.querySelector('.progress-bar') as HTMLElement;
+    const currentTimeSpan = document.querySelector('.current-time') as HTMLElement;
+    const durationSpan = document.querySelector('.duration') as HTMLElement;
+    const currentCover = document.getElementById('current-cover') as HTMLImageElement;
+    const currentTitle = document.getElementById('current-title') as HTMLElement;
+    const currentArtist = document.getElementById('current-artist') as HTMLElement;
+    const trackItems = document.querySelectorAll('.track-item');
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+
+    if (!audio) return;
+
+    // 播放/暂停
+    playPauseBtn?.addEventListener('click', togglePlayPause);
+
+    // 上一首/下一首
+    prevBtn?.addEventListener('click', () => playTrack(currentTrackIndex - 1));
+    nextBtn?.addEventListener('click', () => playTrack(currentTrackIndex + 1));
+
+    // 播放列表点击
+    trackItems.forEach((item, index) => {
+      item.addEventListener('click', () => playTrack(index));
+    });
+
+    // 进度条
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('loadedmetadata', () => {
+      durationSpan.textContent = formatTime(audio.duration);
+    });
+    progressBar?.addEventListener('click', seekAudio);
+
+    // 自动播放下一首
+    audio.addEventListener('ended', () => {
+      if (currentTrackIndex < trackItems.length - 1) {
+        playTrack(currentTrackIndex + 1);
+      } else {
+        // 播放完毕，重置到第一首
+        playTrack(0);
+        audio.pause();
+        updatePlayButton(false);
+      }
+    });
+
+    function togglePlayPause() {
+      if (isPlaying) {
+        audio.pause();
+        updatePlayButton(false);
+      } else {
+        audio.play();
+        updatePlayButton(true);
+      }
+    }
+
+    function playTrack(index: number) {
+      if (index < 0 || index >= trackItems.length) return;
+      
+      const trackElement = trackItems[index] as HTMLElement;
+      const src = trackElement.dataset.src;
+      const title = trackElement.dataset.title;
+      const artist = trackElement.dataset.artist;
+      const poster = trackElement.dataset.poster;
+
+      // 更新当前播放信息
+      currentTrackIndex = index;
+      audio.src = src || '';
+      currentTitle.textContent = title || '';
+      currentArtist.textContent = artist || '';
+      if (poster) currentCover.src = poster;
+
+      // 更新列表高亮
+      trackItems.forEach((item, i) => {
+        if (i === index) {
+          item.classList.add('bg-[var(--primary-color)]', 'text-white');
+        } else {
+          item.classList.remove('bg-[var(--primary-color)]', 'text-white');
+        }
+      });
+
+      // 播放
+      audio.play();
+      updatePlayButton(true);
+    }
+
+    function updatePlayButton(playing: boolean) {
+      isPlaying = playing;
+      if (playing) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+      } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+      }
+    }
+
+    function updateProgress() {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      progressFill.style.width = `${progress}%`;
+      currentTimeSpan.textContent = formatTime(audio.currentTime);
+    }
+
+    function seekAudio(e: MouseEvent) {
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percentage = clickX / rect.width;
+      audio.currentTime = percentage * audio.duration;
+    }
+
+    function formatTime(seconds: number): string {
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // 初始化第一首歌
+    if (trackItems.length > 0) {
+      const firstTrack = trackItems[0] as HTMLElement;
+      firstTrack.classList.add('bg-[var(--primary-color)]', 'text-white');
+    }
+  });
+</script>
+
+<style>
+  .track-item.bg-\[var\(--primary-color\)\] .track-title,
+  .track-item.bg-\[var\(--primary-color\)\] .track-artist,
+  .track-item.bg-\[var\(--primary-color\)\] .track-duration {
+    color: white !important;
+  }
+</style>

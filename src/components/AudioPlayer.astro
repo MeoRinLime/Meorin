@@ -1,0 +1,256 @@
+---
+import { Icon } from 'astro-icon/components'
+
+export interface Props {
+  src: string;
+  title?: string;
+  artist?: string;
+  // 音频封面
+  poster?: string;
+  centered?: boolean;
+  // 是否使用自定义样式
+  customControls?: boolean;
+  className?: string;
+}
+
+const { 
+  src, 
+  title, 
+  artist, 
+  poster, 
+  centered = true,
+  customControls = false,
+  className = ""
+} = Astro.props;
+
+const containerClass = centered 
+  ? "flex justify-center items-center my-6" 
+  : "my-6";
+---
+
+<div class={`audio-player ${containerClass} ${className}`}>
+  <div class="audio-card bg-[var(--card-color)] rounded-2xl shadow-lg overflow-hidden max-w-md w-full">
+    
+    {poster && (
+      <div class="audio-cover-container relative">
+        <img 
+          src={poster} 
+          alt={title || "Audio cover"} 
+          class="w-full h-48 object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+      </div>
+    )}
+    
+    <div class="audio-content p-6">
+      {(title || artist) && (
+        <div class="audio-meta mb-4 text-center">
+          {title && (
+            <h3 class="audio-title text-xl font-bold text-[var(--text-color)] mb-1">
+              {title}
+            </h3>
+          )}
+          {artist && (
+            <p class="audio-artist text-sm text-[var(--text-color-secondary)]">
+              {artist}
+            </p>
+          )}
+        </div>
+      )}
+      
+      {customControls ? (
+        <div class="custom-audio-controls dark:bg-[var(--card-color)]">
+          <audio 
+            id="audio-element"
+            class="hidden"
+            preload="metadata"
+          >
+            <source src={src} type="audio/mpeg" />
+            <source src={src} type="audio/wav" />
+            <source src={src} type="audio/ogg" />
+          </audio>
+          
+          <div class="progress-container mb-4">
+            <div class="progress-bar bg-gray-300 h-1 rounded-full overflow-hidden">
+              <div class="progress-fill bg-[var(--primary-color)] h-full w-0 transition-all duration-100"></div>
+            </div>
+            <div class="time-display flex justify-between text-xs text-[var(--text-color-secondary)] mt-1">
+              <span class="current-time">0:00</span>
+              <span class="duration">0:00</span>
+            </div>
+          </div>
+          
+          <div class="control-buttons flex justify-center items-center space-x-4">
+            <button class="play-pause-btn bg-[var(--primary-color)] text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-[var(--primary-color-dark)] dark:hover:bg-opacity-80 dark:hover:bg-gray-600 transition-colors">
+              <Icon name="heroicons:play-solid" class="play-icon w-5 h-5" />
+              <Icon name="heroicons:pause-solid" class="pause-icon w-5 h-5 hidden" />
+            </button>
+            
+            <div class="volume-control flex items-center space-x-2">
+              <Icon name="heroicons:speaker-wave-solid" class="volume-icon w-4 h-4 text-[var(--text-color-secondary)]" />
+              <Icon name="heroicons:speaker-x-mark-solid" class="volume-mute-icon w-4 h-4 text-[var(--text-color-secondary)] hidden" />
+              <input type="range" class="volume-slider w-16 h-1" min="0" max="100" value="100" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <audio 
+          class="w-full rounded-lg"
+          controls
+          preload="metadata"
+        >
+          <source src={src} type="audio/mpeg" />
+          <source src={src} type="audio/wav" />
+          <source src={src} type="audio/ogg" />
+          您的浏览器不支持音频播放。
+        </audio>
+      )}
+    </div>
+  </div>
+</div>
+
+{customControls && (
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const audio = document.getElementById('audio-element') as HTMLAudioElement;
+      const playPauseBtn = document.querySelector('.play-pause-btn') as HTMLButtonElement;
+      const playIcon = document.querySelector('.play-icon') as HTMLElement;
+      const pauseIcon = document.querySelector('.pause-icon') as HTMLElement;
+      const progressFill = document.querySelector('.progress-fill') as HTMLElement;
+      const progressBar = document.querySelector('.progress-bar') as HTMLElement;
+      const currentTimeSpan = document.querySelector('.current-time') as HTMLElement;
+      const durationSpan = document.querySelector('.duration') as HTMLElement;
+      const volumeSlider = document.querySelector('.volume-slider') as HTMLInputElement;
+      const volumeIcon = document.querySelector('.volume-icon') as HTMLElement;
+      const volumeMuteIcon = document.querySelector('.volume-mute-icon') as HTMLElement;
+
+      if (!audio) return;
+
+      // 播放/暂停切换
+      playPauseBtn?.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play();
+          playIcon.classList.add('hidden');
+          pauseIcon.classList.remove('hidden');
+        } else {
+          audio.pause();
+          playIcon.classList.remove('hidden');
+          pauseIcon.classList.add('hidden');
+        }
+      });
+
+      // 进度条更新
+      audio.addEventListener('timeupdate', () => {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = `${progress}%`;
+        currentTimeSpan.textContent = formatTime(audio.currentTime);
+      });
+
+      // 获取音频时长
+      audio.addEventListener('loadedmetadata', () => {
+        durationSpan.textContent = formatTime(audio.duration);
+      });
+
+      // 进度条点击跳转
+      progressBar?.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        audio.currentTime = percentage * audio.duration;
+      });
+
+      // 音量控制
+      volumeSlider?.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const volume = parseInt(target.value) / 100;
+        audio.volume = volume;
+        
+        // 切换音量图标
+        if (volume === 0) {
+          volumeIcon.classList.add('hidden');
+          volumeMuteIcon.classList.remove('hidden');
+        } else {
+          volumeIcon.classList.remove('hidden');
+          volumeMuteIcon.classList.add('hidden');
+        }
+      });
+
+      // 音量图标点击切换静音/恢复
+      let previousVolume = 1;
+      
+      volumeIcon?.addEventListener('click', () => {
+        previousVolume = audio.volume;
+        audio.volume = 0;
+        volumeSlider.value = '0';
+        volumeIcon.classList.add('hidden');
+        volumeMuteIcon.classList.remove('hidden');
+      });
+
+      volumeMuteIcon?.addEventListener('click', () => {
+        audio.volume = previousVolume;
+        volumeSlider.value = (previousVolume * 100).toString();
+        volumeIcon.classList.remove('hidden');
+        volumeMuteIcon.classList.add('hidden');
+      });
+
+      // 格式化时间
+      function formatTime(seconds: number): string {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+    });
+  </script>
+)}
+
+<style>
+  .audio-player {
+    font-family: inherit;
+  }
+  
+  .audio-player .audio-title {
+    padding-left: 1rem;
+  }
+  
+  .audio-player .audio-title::before {
+    position: absolute;
+    left: 0;
+  }
+  
+  .progress-bar {
+    cursor: pointer;
+  }
+  
+  .volume-slider {
+    accent-color: var(--primary-color);
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: none;
+  }
+
+  .volume-icon, .volume-mute-icon {
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .volume-icon:hover, .volume-mute-icon:hover {
+    color: var(--primary-color);
+  }
+
+</style>
