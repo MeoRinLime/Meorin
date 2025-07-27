@@ -1,6 +1,15 @@
-.particle {
-  position: fixed;
-  pointer-events: none;
-  border-radius: 50%;
-  z-index: 1000;
+/* Canvas-based particles - no CSS needed for particles themselves */
+/* The canvas element styling is handled in JavaScript */
+
+/* Optional: Add some global styles that might be useful */
+body {
+  /* Ensure canvas positioning works correctly */
+  position: relative;
+}
+
+/* Hide canvas on print */
+@media print {
+  canvas[style*="z-index: 1000"] {
+    display: none !important;
+  }
 }

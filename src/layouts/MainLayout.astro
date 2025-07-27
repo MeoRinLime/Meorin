@@ -46,7 +46,13 @@ const props = Astro.props;
   </div>
 </Base>
 
-<script src="/src/utils/clickEffect.ts" is:inline></script>
+<script>
+  import { initClickEffect, destroyClickEffect } from "../utils/clickEffect";
+
+  initClickEffect();
+
+  window.addEventListener('beforeunload', destroyClickEffect);
+</script>
 
 <style>
   .main-container {
