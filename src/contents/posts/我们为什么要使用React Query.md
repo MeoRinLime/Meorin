@@ -13,7 +13,7 @@ draft: false
 
 **传统方式 (使用 `useState` + `useEffect`)**
 
-```JSX
+```js
 import React, { useState, useEffect } from 'react';
 
 function MyComponent() {
@@ -45,7 +45,6 @@ function MyComponent() {
 }
 
 ```
-
 
 这个模式看起来没问题，但当应用变复杂时，你会遇到很多棘手的问题：
 
