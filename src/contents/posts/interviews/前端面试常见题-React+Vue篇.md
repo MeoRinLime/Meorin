@@ -115,10 +115,140 @@ Render Props 是另一种逻辑复用模式，它通过一个值为**函数**的
 **核心思想**：将可复用的**状态逻辑**封装到一个函数中。这个函数的名字必须以 `use` 开头，并且可以在其内部调用其他的 Hooks（如 `useState`, `useEffect`）。
 
 ## React fiber 是什么？有什么用
-（你的答案）
+
+总的来说，就是Fiber 把一个大的、同步的、不可中断的渲染任务，变成了一个**小的、异步的、可以中断、可以恢复并且可以设置优先级的任务处理系统**。
+
+### Fiber 是什么？
+
+1. **它是一种数据结构**：  
+    Fiber 不再是之前那个简单的虚拟 DOM 对象。现在，**每一个组件实例都对应一个 "Fiber 节点" (Fiber Node)**。它是一个普通的 JavaScript 对象，包含了比虚拟 DOM 更多的信息，比如：
+    
+    - 组件的类型 (`type`)、`key` 等。
+    - 指向**父节点**、**子节点**、**兄弟节点**的指针（`return`, `child`, `sibling`）。这些指针将所有 Fiber 节点连接成一个**链表树（Fiber Tree）**。
+    - 组件更新所需的数据（`pendingProps`, `memoizedState`）。
+    - 任务的优先级、副作用（`effectTag`）等调度信息。
+    
+    这个链表结构是实现遍历和任务中断的关键。React 不再需要深度递归，而是可以通过指针在 Fiber 树上自由地“行走”。
+    
+2. **它是一种新的协调算法 (Reconciliation Algorithm)**：  
+    它指的是 React 用来找出新旧 UI 之间差异（diffing）并决定如何更新 DOM 的整个工作机制。这个新机制的核心就是**可中断的异步更新**。
+### Fiber 有什么用？（它解决了什么问题）
+
+Fiber 的根本目标是**提升应用的响应速度和用户体验**，尤其是在处理复杂或耗时的渲染任务时。
+#### 1. 解决主线程阻塞问题
+
+- **旧问题**：在 Fiber 之前，React 的更新过程是同步且递归的。一旦开始，就必须一口气执行到底，如果组件树很庞大，计算时间可能超过 16ms（一帧的时间），导致页面掉帧、动画卡顿、用户输入延迟。
+- **Fiber 的解决方案**：Fiber 将整个更新过程分解成多个小的“工作单元”（unit of work）。每完成一个单元，React 就会把控制权交还给浏览器主线程，让浏览器有机会去处理更高优先级的任务（如用户输入、动画）。然后，在浏览器空闲时（通过 `requestIdleCallback` 的思想），再回来继续执行剩下的工作单元。
+
+#### 2. 实现任务优先级调度
+
+Fiber 允许 React 为不同的更新任务分配优先级。
+
+- **高优先级**：用户输入、动画等，需要立即响应。
+- **中等优先级**：普通的 `setState` 更新。
+- **低优先级**：数据获取、页面外的组件渲染等。
+
+当一个高优先级的任务（如用户输入）进来时，React 可以**暂停**当前正在进行的低优先级渲染任务，先去处理高优先级的，处理完后再**恢复**之前的低优先级任务。
+
+#### 3. 启用新的高级特性
+
+Fiber 的异步、可中断架构是实现许多 React 新特性的基石，没有 Fiber 就没有它们：
+
+- **Suspense**：允许组件“等待”某个异步操作（如代码分割、数据获取）完成后再进行渲染，并在此期间显示一个加载状态。
+- **Concurrent Features (并发特性)**：这是 React 未来的发展方向，允许 React 同时处理多个状态更新，并根据优先级智能地协调它们，使得 UI 永不阻塞。
+- **错误边界 (Error Boundaries)**：虽然在 React 16 之前就有，但 Fiber 的架构让它能更可靠地捕获并处理组件树中的渲染错误，而不会让整个应用崩溃。
+
 
 ## React 生命周期有哪些？React 16 废弃了哪些？为什么要废弃？新增的生命周期钩子有哪些？有什么作用
-（你的答案）
+
+#### 1. 挂载阶段 (Mounting)
+
+当组件第一次被创建时，会按顺序调用以下方法：
+
+- `constructor()`
+    - **作用**：初始化 state、绑定事件处理函数的 `this`。
+- `static getDerivedStateFromProps(props, state)`
+    - **作用**：在 `render` 之前调用，用于根据传入的 `props` 来派生（更新）`state`。
+- `render()`
+    - **作用**：**核心方法，必须存在**。根据 `props` 和 `state` 返回 React 元素（通常是 JSX），用于描述 UI。
+- `componentDidMount()`
+    - **作用**：组件已经被渲染到 DOM 中后立即调用。
+    - **这是执行副作用的最佳位置**，例如：发起网络请求、添加事件监听、操作 DOM 节点。
+
+#### 2. 更新阶段 (Updating)
+
+当组件的 `props` 或 `state` 改变时，会触发更新，按顺序调用以下方法：
+
+- `static getDerivedStateFromProps(props, state)`
+    - **作用**：同挂载阶段，在每次重新渲染前都会被调用。
+- `shouldComponentUpdate(nextProps, nextState)`
+    - **作用**：一个性能优化的钩子。它允许你告诉 React 本次更新是否非必要。
+- `render()`
+    - **作用**：同挂载阶段，重新渲染 UI。
+- `getSnapshotBeforeUpdate(prevProps, prevState)`
+    - **作用**：在 `render` 之后，但在 DOM 更新之前被调用。
+- `componentDidUpdate(prevProps, prevState, snapshot)`
+    - **作用**：在组件更新并渲染到 DOM 后立即调用。
+
+#### 3. 卸载阶段 (Unmounting)
+
+当组件从 DOM 中移除时调用：
+
+- `componentWillUnmount()`
+    - **作用**：在组件卸载及销毁之前直接调用。
+    - **这是执行清理操作的最佳位置**，例如：清除定时器、取消网络请求、移除在 `componentDidMount` 中添加的事件监听。
+
+
+### React 16 废弃了哪些生命周期？
+
+React 16.3 开始，以下三个生命周期被标记为“不安全”（UNSAFE），并在未来的版本中被废弃：
+
+1. `UNSAFE_componentWillMount()`
+2. `UNSAFE_componentWillReceiveProps()`
+3. `UNSAFE_componentWillUpdate()`
+
+> **注意**：它们并没有被立即删除，而是添加了 `UNSAFE_` 前缀作为过渡。在 React 17+ 中，你应该完全避免使用它们。
+
+### 为什么要废弃它们？
+
+**核心原因：为了配合 React 的异步渲染（Fiber 架构）。**
+
+在 React 16 引入 Fiber 架构后，渲染过程变成了**可中断的**。这意味着一个组件的渲染（Render Phase）可能会被更高优先级的任务（如用户输入）打断，然后稍后回来继续执行，甚至可能被多次执行。
+
+这三个被废弃的生命周期都处于**“Render Phase”**（渲染阶段）。如果在这些函数中加入了**副作用**（如 AJAX 请求、操作 DOM），会带来严重的问题：
+
+- **`componentWillMount`**: 如果在其中发起 AJAX 请求，在异步渲染模式下，它可能会被**多次调用**，导致请求被发送多次，但组件最终只挂载一次。
+- **`componentWillReceiveProps`**: 同样可能被多次调用，导致状态被意外地多次覆盖。
+- **`componentWillUpdate`**: 同上，如果在其中操作 DOM，可能会导致状态不一致。
+
+**总结：** 因为这些 `will*` 生命周期在异步渲染下可能被多次触发，导致不可预测的副作用和 bug，所以它们被认为是“不安全的”，需要被更安全的替代方案取代。
+
+
+### 新增的生命周期钩子有哪些？有什么作用？
+
+为了安全地替代被废弃的钩子，React 16.3 引入了两个新的生命周期：
+
+#### 1. `static getDerivedStateFromProps(props, state)`
+
+- **替代了谁？** 主要替代了 `componentWillReceiveProps`。
+- **有什么作用？** 它的唯一目标就是：**用 `props` 来派生 `state`**。
+
+#### 2. `getSnapshotBeforeUpdate(prevProps, prevState)`
+
+- **替代了谁？** 替代了 `componentWillUpdate` 中“在更新前读取 DOM”的场景。
+- **有什么作用？** 它在 `render` 方法之后、真实 DOM 更新之前执行。这给了你一个最后的机会，从 DOM 中**读取**信息（如滚动位置、元素尺寸）。
+
+### 函数组件与 Hooks
+
+值得一提的是，在现代 React 开发中，我们更推荐使用**函数组件 + Hooks**。Hooks API 提供了一种更简洁、更直观的方式来处理组件的生命周期和副作用。
+
+- `useState`: 管理 state。
+- `useEffect`: 它一个 Hook 统一了 `componentDidMount`, `componentDidUpdate`, 和 `componentWillUnmount` 三个生命周期的功能。
+    - `useEffect(() => { ... }, [])`: 模拟 `componentDidMount`
+    - `useEffect(() => { ... }, [dep])`: 模拟 `componentDidUpdate`
+    - `useEffect(() => { return () => { ... } }, [])`: 返回的函数模拟 `componentWillUnmount`
+
+
 
 ## 如何对 React 性能优化
 （你的答案）
@@ -130,7 +260,8 @@ Render Props 是另一种逻辑复用模式，它通过一个值为**函数**的
 （你的答案）
 
 ## 讲讲 React 的 hooks，有什么好处？有哪些常用的 hook
-（你的答案）
+
+
 
 ## 讲讲 Reactkey 的作用
 （你的答案）
