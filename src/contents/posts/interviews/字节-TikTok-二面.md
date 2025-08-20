@@ -50,6 +50,60 @@ draft: false
 
 > 8.读代码（时间循环+块级作用域+async await）
 
+```js
+setTimeout(() => console.log(sum));
+async function add (i, j) {
+    sum += await (i + j);
+}
+const p = Promise.resolve();
+let sum = 0;
+for (let i = j = 0; i < 3; i += 1, ++j) {
+    p.then(() => add(i, j));
+}
+for (var i = 0; i < 3; i++) {
+   setTimeout(() => console.log(i), 0);
+}
+```
+
+```js
+参考答案：
+5
+3 3 3
+```
+
+有几个陷阱：
+
+1. 变量声明陷阱: `for (let i = j = 0; ...)`
+2. 闭包与 `var` 陷阱: `for (var i = 0; ...)`
+3. `await` 与赋值运算符陷阱: `sum += await ...`
+
+第一个for循环中的 `j` 实际上是一个全局变量，所以在第一个for循环结束后的微任务队列实际上是：
+`[() => add(0, j), () => add(1, j), () => add(2, j)]`，此时全局 `j` 的值为 3；
+
+ `sum += X` 等价于 `sum = sum + X`。JavaScript 引擎在遇到 `await` 时，会先计算 `await` **右边**的表达式，但也会**立即读取** `await` **左边**表达式中变量的当前值。
+
+- 所以，引擎执行 `sum = sum + await(3)` 时：
+    - 它读取了右边 `sum` 的值，**此时 `sum` 是 `0`**。
+    - 然后 `await` 暂停了 `add` 函数的执行。
+    - 它将一个“恢复任务”（continuation）放入微任务队列的末尾。这个任务的内容可以理解为：“当 `await(3)` 完成后，执行 `sum = 0 + 3`”。
+
+- 继续执行第二个微任务: `() => add(1, j)`
+    - 同样，全局 `j` 是 `3`，执行 `add(1, 3)`。
+    - 执行 `sum = sum + await(4)`。
+    - 引擎再次读取右边 `sum` 的值，**此时 `sum` 仍然是 `0`**（因为上一个任务的赋值操作还没执行）。
+    - `await` 暂停函数，并将“恢复任务”放入微任务队列：“当 `await(4)` 完成后，执行 `sum = 0 + 4`”。
+
+- 然后执行第三个微任务: `() => add(2, j)`
+    - 执行 `add(2, 3)`。
+    - 执行 `sum = sum + await(5)`。
+    - 引擎读取右边 `sum` 的值，**`sum` 依然是 `0`**。
+    - `await` 暂停函数，并将“恢复任务”放入微任务队列：“当 `await(5)` 完成后，执行 `sum = 0 + 5`”。
+
+现在，sum 仍然是 0，微任务队列如下：
+`[ (sum = 0 + 3), (sum = 0 + 4), (sum = 0 + 5) ]`
+
+所有微任务执行完成后，得到sum = 5
+
 
 > 9.看项目中使用了three.js，为什么要用？用了之后达到了一个什么效果？
 
