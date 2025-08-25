@@ -1198,7 +1198,33 @@ class YourCar implements TCar {
 （你的答案）
 
 ## 实现一个发布订阅
-（你的答案）
+
+```js
+class PubSub {
+    constructor() {
+        this.events = {};
+    }
+
+    subscribe(eventName, fn) {
+        if (!this.events[eventName]) {
+	        this.events[eventName] = [];
+        }
+        this.events[eventName].push(fn);
+    }
+
+    unsubscribe(eventName, fn) {
+        if (this.events[eventName]) {
+        this.events[eventName] = this.events[eventName].filter(eventFn => eventFn !== fn);
+        }
+    }
+
+    publish(eventName, data) {
+        if (this.events[eventName]) {
+	        this.events[eventName].forEach(fn => fn(data));
+        }
+    }
+}
+```
 
 ## 如何实现数组扁平化
 
