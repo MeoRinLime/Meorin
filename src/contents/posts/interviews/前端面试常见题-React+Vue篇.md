@@ -1,5 +1,5 @@
 ---
-title: 前端面试常见题-Reac+Vue
+title: 前端面试常见题-React+Vue
 published: 2025-08-11
 description: 收集的前端常见问题和借助Gemini得出的解答
 tags:
