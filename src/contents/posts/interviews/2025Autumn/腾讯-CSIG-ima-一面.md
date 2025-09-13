@@ -1,5 +1,5 @@
 ---
-title: 腾讯基础微信团队一面
+title: 腾讯CSIG ima 团队一面
 published: 2025-09-11
 description: 2026秋招腾讯 CSIG ima 团队前端一面
 tags:
