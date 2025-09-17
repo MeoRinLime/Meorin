@@ -1195,7 +1195,7 @@ class YourCar implements TCar {
 （你的答案）
 
 ## 讲讲 js 垃圾回收机制
-（你的答案）
+
 
 ## 实现一个发布订阅
 
