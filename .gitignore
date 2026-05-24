@@ -157,3 +157,4 @@ src/pages/en
 src/pages/ja
 /public/live2d-widget
 /src/contents/posts/.obsidian
+.claude/settings.local.json

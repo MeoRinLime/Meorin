@@ -34,6 +34,13 @@ interface Configuration {
   };
 
   bannerStyle: "LOOP";
+
+  comment?: {
+    repo: `${string}/${string}`;
+    repoId: string;
+    category: string;
+    categoryId: string;
+  };
 }
 
 export type { Configuration };

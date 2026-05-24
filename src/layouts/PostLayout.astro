@@ -2,6 +2,8 @@
 import Main from "../layouts/MainLayout.astro";
 import Markdown from "../components/Markdown.astro";
 import CopyRight from "../components/misc/CopyRight.astro";
+import Giscus from "../components/misc/Giscus.svelte";
+import MeorinConfig from "../../meorin.config";
 
 interface Props {
   title?: string;
@@ -42,6 +44,17 @@ const {
             license={license}
             author={author}
             sourceLink={sourceLink}
+          />
+        )
+      }
+      {
+        MeorinConfig.comment && (
+          <Giscus
+            client:visible
+            repo={MeorinConfig.comment.repo}
+            repoId={MeorinConfig.comment.repoId}
+            category={MeorinConfig.comment.category}
+            categoryId={MeorinConfig.comment.categoryId}
           />
         )
       }

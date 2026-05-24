@@ -71,6 +71,13 @@ const MeorinConfig: Configuration = {
 
   // WIP functions
   bannerStyle: "LOOP", // 'loop' | 'static' | 'hidden'
+
+  comment: {
+    repo: "MeoRinLime/Meorin",
+    repoId: "R_kgDOOvyZeg",
+    category: "Announcements",
+    categoryId: "DIC_kwDOOvyZes4C9oIn",
+  },
 };
 
 export default MeorinConfig;
