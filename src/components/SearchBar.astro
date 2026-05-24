@@ -41,11 +41,9 @@ const searchPlaceholder = i18n(I18nKeys.nav_bar_search_placeholder);
 <script>
   import { OverlayScrollbars } from "overlayscrollbars";
   import { getClientI18n } from "../locales/translation";
-  import type I18nKeys from "../locales/keys";
 
   let searchKeyword = "";
   let searchResult: any[] = [];
-  let searchPlaceholder = "搜索";
 
   const resultPannel = document.getElementById("result-pannel") as HTMLDivElement;
   const searchBar = document.getElementById("search-bar") as HTMLDivElement;

@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import { Image } from "astro:assets";
 import MeorinConfig from "../../meorin.config";
 import I18nKeys from "../locales/keys";
 import { i18n } from "../locales/translation";
@@ -20,10 +21,12 @@ const tagKeys = [...tags.keys()];
       style=`animation-delay: var(--onload-animation-delay);`
     >
       <a href="/about" class="avatar-wrapper">
-        <img
+        <Image
           src={MeorinConfig.avatarUrl}
           alt="avatar"
-          class="avatar lozad select-none"
+          width={224}
+          height={224}
+          class="avatar select-none"
         />
       </a>
       <div class="username mt-4">

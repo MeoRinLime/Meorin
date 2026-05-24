@@ -20,6 +20,14 @@ import pagefind from "astro-pagefind";
 // https://astro.build/config
 export default defineConfig({
   site: MeorinConfig.site,
+  image: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.meorin.top",
+      },
+    ],
+  },
   integrations: [
     tailwind(),
     svelte(),
